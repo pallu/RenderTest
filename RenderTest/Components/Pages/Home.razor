@@ -16,8 +16,15 @@ Welcome to your new app.
   </label>
 </div> *@
 
-<div>
-    @((MarkupString)html)
+<div class="row">
+    <div class="col-6">
+        @((MarkupString)html)
+    </div>
+    <div class="col-6">
+        <pre>
+            @html
+        </pre>
+    </div>
 </div>
 
 @code
