@@ -1,0 +1,41 @@
+﻿@page "/"
+
+<PageTitle>Home</PageTitle>
+
+<h1>Hello, world!</h1>
+
+Welcome to your new app.
+<div class="input-group mb-3">
+    <input type="number" class="form-control" placeholder="Number of lines" aria-describedby="button-addon2" @bind-value="numberOfLines">
+    <button class="btn btn-outline-secondary" type="button" id="button-addon2" @onclick="GetHtml">Get Html</button>
+</div>
+
+<div>
+    @((MarkupString)html)
+</div>
+
+@code
+{
+        [Inject] IServiceProvider serviceProvider { get; set; } = null!;
+        private int numberOfLines = 10;
+        private string html="";
+        async Task GetHtml()
+        {
+            var sp = serviceProvider.CreateScope().ServiceProvider;
+            var loggerFactory = sp.GetRequiredService<ILoggerFactory>();
+            using var htmlRenderer = new HtmlRenderer(sp, loggerFactory);
+            html = await htmlRenderer.Dispatcher.InvokeAsync(async () =>
+            {
+                var dictionary = new Dictionary<string, object?>
+                {
+                    { nameof(TestComponent.NumberOfLines), numberOfLines }
+                };
+
+                var parameters = ParameterView.FromDictionary(dictionary);
+                var output = await htmlRenderer.RenderComponentAsync<TestComponent>(parameters);
+
+                return output.ToHtmlString();
+            });
+            //await InvokeAsync(StateHasChanged);
+        }
+}
