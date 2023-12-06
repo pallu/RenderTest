@@ -19,4 +19,9 @@
 </table>
 @code {
     [Parameter] public int NumberOfLines { get; set; }
+
+    protected override void OnInitialized()
+    {
+        base.OnInitialized();
+    }
 }

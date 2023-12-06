@@ -1,0 +1,18 @@
+﻿@inherits LayoutComponentBase
+<header>
+    <h1>PDF Template</h1>
+</header>
+
+<DynamicComponent Type="TypeOfRenderingComponent" Parameters="ComponentParams" />
+@* @Body *@
+
+<footer>
+    @TrademarkMessage
+</footer>
+
+@code {
+    [Parameter] public Type TypeOfRenderingComponent { get; set; }
+    [Parameter] public Dictionary<string,object?> ComponentParams {get;set;}
+    public string TrademarkMessage { get; set; } = 
+        "This is a trademark";
+}

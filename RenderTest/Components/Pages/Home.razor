@@ -1,5 +1,5 @@
 ﻿@page "/"
-
+@using RenderTest.Templates
 <PageTitle>Home</PageTitle>
 
 <h1>Hello, world!</h1>
@@ -9,6 +9,12 @@ Welcome to your new app.
     <input type="number" class="form-control" placeholder="Number of lines" aria-describedby="button-addon2" @bind-value="numberOfLines">
     <button class="btn btn-outline-secondary" type="button" id="button-addon2" @onclick="GetHtml">Get Html</button>
 </div>
+@* <div class="form-check">
+  <input class="form-check-input" type="checkbox" id="flexCheckChecked" @bind-value="isPdf">
+  <label class="form-check-label" for="flexCheckChecked">
+    Apply PDF Layout
+  </label>
+</div> *@
 
 <div>
     @((MarkupString)html)
@@ -16,24 +22,29 @@ Welcome to your new app.
 
 @code
 {
-        [Inject] IServiceProvider serviceProvider { get; set; } = null!;
-        private int numberOfLines = 10;
-        private string html="";
-        async Task GetHtml()
+    [Inject] IServiceProvider serviceProvider { get; set; } = null!;
+    private int numberOfLines = 10;
+    private string html="";
+    private bool isPdf;
+    async Task GetHtml()
+    {
+        var sp = serviceProvider.CreateScope().ServiceProvider;
+        var loggerFactory = sp.GetRequiredService<ILoggerFactory>();
+        using var htmlRenderer = new HtmlRenderer(sp, loggerFactory);
+        html = await htmlRenderer.Dispatcher.InvokeAsync(async () =>
         {
-            var sp = serviceProvider.CreateScope().ServiceProvider;
-            var loggerFactory = sp.GetRequiredService<ILoggerFactory>();
-            using var htmlRenderer = new HtmlRenderer(sp, loggerFactory);
-            html = await htmlRenderer.Dispatcher.InvokeAsync(async () =>
-            {
-                var dictionary = new Dictionary<string, object?>
+            var componentParams = new Dictionary<string, object?>
                 {
                     { nameof(TestComponent.NumberOfLines), numberOfLines }
                 };
-
-                var parameters = ParameterView.FromDictionary(dictionary);
-                var output = await htmlRenderer.RenderComponentAsync<TestComponent>(parameters);
-
+            var layoutParams = new Dictionary<string, object?>
+            {
+                {nameof(_PDFLayout.TypeOfRenderingComponent),typeof(TestComponent)},
+                {nameof(_PDFLayout.ComponentParams), componentParams}
+            };
+                var parameters = ParameterView.FromDictionary(layoutParams);
+                //var output = await htmlRenderer.RenderComponentAsync<TestComponent>(parameters);
+                var output = await htmlRenderer.RenderComponentAsync<_PDFLayout>(parameters);
                 return output.ToHtmlString();
             });
             //await InvokeAsync(StateHasChanged);
